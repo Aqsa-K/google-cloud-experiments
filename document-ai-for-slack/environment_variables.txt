@@ -1,0 +1,2 @@
+SLACK_SECRET = <your-slack-secret-key>
+SLACK_BOT_TOKEN = <your-slack-bot-token>
