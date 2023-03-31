@@ -1,5 +1,6 @@
 # Function dependencies, for example:
 # package>=version
+# controller:
 certifi==2022.12.7
 Flask==2.2.3
 slack-bolt==1.16.2
@@ -13,3 +14,5 @@ google-auth==2.16.2
 google-auth-httplib2==0.0.3
 google-auth-oauthlib==0.4.0
 urllib3==1.26.14
+google-cloud-documentai==2.13.0
+protobuf
