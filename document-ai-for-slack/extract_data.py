@@ -6,10 +6,11 @@ from google.cloud import storage
 from google.protobuf.json_format import MessageToJson
 
 project_id = "<your-project-id>"
-processor_id = "<your-processor-id>" #"583ea2dc791b3a1c"
-location = "us"
-mime_type = 'image/jpeg'
+processor_id = "<your-processor-id>"
+location = "<your-processor-location>"
 bucket_name = "<your-bucket-name>"
+mime_type = 'image/jpeg'
+
 
 def main(event, context):
     """Triggered by a change to a Cloud Storage bucket.
@@ -19,12 +20,8 @@ def main(event, context):
     """
     bucket = event['bucket']
     file = event
-    if ".pdf" in file["name"].lower():
-        uri = f"gs://slack_documents/{file['name']}"
-        data = parse_form(filename = file["name"])
-
     if ".jpg" in file["name"].lower():
-        uri = f"gs://slack_documents/{file['name']}"
+        uri = f"gs://{bucket_name}/{file['name']}"
         data = parse_form(filename = file["name"])
 
     return "ok"
@@ -57,15 +54,16 @@ def parse_form(filename):
     # Convert the JSON string to a Python dictionary
     response_dict = json.loads(response_json)
 
-    blob_write = bucket.blob("results/shifa_result.json")
 
+    blob_write = bucket.blob("results/{filename}.json")
+
+    # Write the response result to file 
     with blob_write.open("w") as f:
         json.dump(response_dict, f)
 
     receipt_data_json = {}
 
-    #extract form fields
-
+    # Extract form fields
     document_pages = document.pages
     print("Form data detected:\n")
     # For each page fetch each form field and display fieldname, value and confidence scores
@@ -82,30 +80,14 @@ def parse_form(filename):
             i+=1
             receipt_data_json[fieldName] = str(fieldValue)
 
-    blob_write = bucket.blob("results/receipt_result.json")
+    # Define Destination blob object of where the response result will be stored in Bucket
+    blob_write = bucket.blob("results/{filename}.json")
 
+    # Write the response result to file in Bucket
     with blob_write.open("w") as f:
         json.dump(receipt_data_json, f)
 
     return "ok"
-
-
-def hello_world(request):
-    """Responds to any HTTP request.
-    Args:
-        request (flask.Request): HTTP request object.
-    Returns:
-        The response text or any set of values that can be turned into a
-        Response object using
-        `make_response <http://flask.pocoo.org/docs/1.0/api/#flask.Flask.make_response>`.
-    """
-    request_json = request.get_json()
-    if request.args and 'message' in request.args:
-        return request.args.get('message')
-    elif request_json and 'message' in request_json:
-        return request_json['message']
-    else:
-        return f'Hello World!'
 
 
 def get_text(doc_element: dict, document: dict):
